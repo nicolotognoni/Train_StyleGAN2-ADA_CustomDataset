@@ -1,0 +1,53 @@
+# Loading TF 1.14 
+!pip uninstall --yes tensorflow
+!pip install tensorflow-gpu==1.14
+!apt install --allow-change-held-packages libcudnn7=7.4.1.5-1+cuda10.0
+
+import tensorflow
+print(tensorflow.__version__)
+
+# Checking the GPU Google Colab 
+!nvidia-smi
+
+# Mounting Google Drive
+from google.colab import drive
+drive.mount('/content/drive')
+
+import os
+if os.path.isdir("/content/drive/My Drive/colab-sg2-ada"):
+    %cd "/content/drive/My Drive/colab-sg2-ada/stylegan2-ada"
+else:
+    #install script
+    %cd "/content/drive/My Drive/"
+    !mkdir colab-sg2-ada
+    %cd colab-sg2-ada
+    !git clone https://github.com/NVlabs/stylegan2-ada
+    %cd stylegan2-ada
+    !mkdir downloads
+    !mkdir datasets
+    
+# Creating custom TFRecords dataset
+# first argument is output directory and second argument is the path to the dataset
+
+!python dataset_tool.py create_from_images /content/drive/MyDrive/colab-sg2-ada/stylegan2-ada/datasets/TFRecords... /content/drive/MyDrive/colab-sg2-ada/stylegan2-ada/datasets/images...
+
+# Training
+
+#how often should the model generate samples and a .pkl file
+snapshot_count = 25
+#should the images be mirrored left to right?
+mirrored = True
+#metrics 
+metric_list = None
+
+# resuming? get the path to your latest .pkl file and use that
+resume_from = "/content/drive/MyDrive/colab-sg2-ada/stylegan2-ada/results/.../model .pkl file"
+
+# training
+cmd= f"/usr/bin/python3 train.py --outdir= /content/.../output_directory  \
+    --data= /content/.../directory_where_the_tfrecords_dataset_is_saved --resume={resume_from} \
+    --snap={snapshot_count} \
+    --mirror={mirrored} \
+    --metrics={metric_list}"
+
+!{cmd}
